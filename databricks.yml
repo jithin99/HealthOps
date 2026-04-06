@@ -1,0 +1,77 @@
+bundle:
+  name: HealthOps
+
+targets:
+  dev:
+    mode: development
+    default: true
+    workspace:
+      host: https://dbc-a7251660-a8e7.cloud.databricks.com
+
+resources:
+  jobs:
+    healthops_pipeline:
+      name: healthops-pipeline
+
+      schedule:
+        quartz_cron_expression: "0 50 13 * 04 ?"
+        timezone_id: "Asia/Kolkata"
+        pause_status: "UNPAUSED"
+
+      max_retries: 2
+      timeout_seconds: 3600
+      email_notifications:
+        on_start:
+          - jithinchowdaryatluri@gmail.com
+        on_success:
+          - jithinchowdaryatluri@gmail.com
+          - Deepak.pj@outlook.com 
+        on_failure:
+          - jithinchowdaryatluri@gmail.com
+
+      tasks:
+        - task_key: clean_admissions
+          notebook_task:
+            notebook_path: ./notebooks/clean_Admissions.ipynb
+
+        - task_key: clean_patients
+          depends_on:
+            - task_key: clean_admissions
+          notebook_task:
+            notebook_path: ./notebooks/clean_Patient.ipynb
+
+        - task_key: clean_labevents
+          depends_on:
+            - task_key: clean_patients
+          notebook_task:
+            notebook_path: ./notebooks/clean_labevents.ipynb
+
+        - task_key: clean_labitems
+          depends_on:
+            - task_key: clean_labevents
+          notebook_task:
+            notebook_path: ./notebooks/clean_labitems.ipynb
+
+        - task_key: merge_lab
+          depends_on:
+            - task_key: clean_labitems
+          notebook_task:
+            notebook_path: ./notebooks/Merge_lab.ipynb
+
+        - task_key: merge_all
+          depends_on:
+            - task_key: merge_lab
+          notebook_task:
+            notebook_path: ./notebooks/merge_all.ipynb
+
+        - task_key: feature_engineering
+          depends_on:
+            - task_key: merge_all
+          notebook_task:
+            notebook_path: ./notebooks/feature_engineering.ipynb
+
+        - task_key: final_output
+          depends_on:
+            - task_key: feature_engineering
+          notebook_task:
+            notebook_path: ./notebooks/final_output.ipynb
