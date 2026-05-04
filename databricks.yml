@@ -13,13 +13,11 @@ resources:
     healthops_pipeline:
       name: healthops-pipeline
 
-      schedule:
-        quartz_cron_expression: "0 50 13 * 04 ?"
-        timezone_id: "Asia/Kolkata"
-        pause_status: "UNPAUSED"
+#      schedule: #here i am using time based scheduler using corn expression for scheduling 
+#        quartz_cron_expression: "0 07 19 * 04 ?"
+#        timezone_id: "Asia/Kolkata"
+#        pause_status: "UNPAUSED"
 
-      max_retries: 2
-      timeout_seconds: 3600
       email_notifications:
         on_start:
           - jithinchowdaryatluri@gmail.com
@@ -65,7 +63,7 @@ resources:
             notebook_path: ./notebooks/merge_all.ipynb
 
         - task_key: feature_engineering
-          depends_on:
+          depends_on: # This is example of dependency trigger
             - task_key: merge_all
           notebook_task:
             notebook_path: ./notebooks/feature_engineering.ipynb
@@ -75,3 +73,5 @@ resources:
             - task_key: feature_engineering
           notebook_task:
             notebook_path: ./notebooks/final_output.ipynb
+
+# databricks bundle run healthops_pipeline - manual trigger
